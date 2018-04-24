@@ -159,8 +159,6 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         showMenuDialog();
-        String str = "";
-        str.substring(2);
     }
 
     private void initData() {
