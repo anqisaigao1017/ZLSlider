@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".module.main.view.NetImageActivity">
+    <item
+        android:id="@+id/set_host_address"
+        android:title="设置Host"
+        app:showAsAction="always" />
+</menu>

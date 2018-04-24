@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jude.rollviewpagerdome"
+    android:installLocation="internalOnly">
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.jude.rollviewpagerdome.module.network.GlideConfigModule"
+            android:value="GlideModule" />
+
+        <activity
+            android:name=".module.main.view.MainActivity"
+            android:label="@string/app_name">
+            <!--<intent-filter>-->
+            <!--<action android:name="android.intent.action.MAIN" />-->
+            <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity
+            android:name=".module.main.view.SimpleActivity"
+            android:label="Simple" />
+        <activity
+            android:name=".module.main.view.LoopActivity"
+            android:label="Loop" />
+        <activity
+            android:name=".module.main.view.NetImageActivity"
+            android:label="NetImage" />
+
+        <activity
+            android:name=".module.main.view.HomeActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/HomeActivityTheme">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service android:name=".module.version.view.UpdateService" />
+        <receiver android:name=".module.main.view.AutoStartAppReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver>
+
+        <!--<receiver-->
+        <!--android:name=".module.main.BoosterReceiver"-->
+        <!--android:enabled="true"-->
+        <!--android:exported="true"-->
+        <!--android:permission="android.permission.RECEIVE_BOOT_COMPLETED">-->
+        <!--<intent-filter android:priority="1000">-->
+        <!--<action android:name="android.intent.action.BOOT_COMPLETED"></action>-->
+        <!--<category android:name="android.intent.category.HOME"/>-->
+        <!--</intent-filter>-->
+        <!--</receiver>-->
+
+        <meta-data android:value="5aaf6ba3a40fa349750000f1" android:name="UMENG_APPKEY"/>
+        <meta-data android:value="${UMENG_CHANNEL_VALUE}" android:name="UMENG_CHANNEL"/>
+    </application>
+
+
+</manifest>

@@ -1,0 +1,54 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'zhili_slider'
+            keyPassword '20170502'
+            storeFile file('/Users/garry/Desktop/WorkPlace/ZLSlider/zhili_slider.jks')
+            storePassword '20170502'
+        }
+    }
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
+    defaultConfig {
+        applicationId "com.zhili.slider"
+        minSdkVersion 15
+        targetSdkVersion 22
+        versionCode 10
+        versionName "1.2.1"
+        flavorDimensions "versionCode"
+    }
+    useLibrary 'org.apache.http.legacy'
+    buildTypes {
+        release {
+            debuggable true
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+    }
+    productFlavors {
+        firstMiddleSchool {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "firstMiddleSchool"]
+            resValue "string", "base_url", "http://183.6.131.219:9999/zhili_slider/"
+        }
+        trueLight {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "trueLight"]
+            resValue "string", "base_url", "http://183.6.131.219:9999/zhili_slider/"
+//            resValue "string","base_url","http://192.168.1.146/zhili_slider/"
+        }
+
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.squareup.okhttp3:okhttp:3.5.0'
+    compile 'com.umeng.sdk:common:1.5.0'
+    compile 'com.umeng.sdk:analytics:7.5.0'
+    compile project(':rollviewpager')
+}

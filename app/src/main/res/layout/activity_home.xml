@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_photo"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:scaleType="fitXY"
+        android:layout_height="match_parent" />
+
+    <WebView
+        android:id="@+id/wb_show"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </WebView>
+
+    <WebView
+        android:id="@+id/wb_cache"
+        android:layout_width="1dp"
+        android:visibility="gone"
+        android:layout_height="1dp"></WebView>
+
+    <com.jude.rollviewpager.RollPagerView
+        android:id="@+id/iv_looper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:rollviewpager_play_delay="3000"/>
+</RelativeLayout>
