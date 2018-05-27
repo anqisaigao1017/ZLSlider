@@ -257,6 +257,7 @@ public class HomeActivity extends AppCompatActivity {
         mCacheWebView.setWebChromeClient(new MyWebChromeClient());
 
         mPhotoLoopView = (RollPagerView) findViewById(R.id.iv_looper);
+        mPhotoLoopView.setAnimationDurtion(1000);
 
         mLoadingDialog = new LoadingDialog(HomeActivity.this);
         mSetHostDialog = new SetHostDialog(HomeActivity.this);
@@ -578,7 +579,8 @@ public class HomeActivity extends AppCompatActivity {
             final Request request = new Request.Builder()
                     .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + SystemUtil.getAndroidId(HomeActivity.this))
 //                    .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + "985a04a7e1138800")
-//                    .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + "a1˛eeeac74cd75b69")
+//                    .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + "a1eeeac74cd75b69")
+//                    .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + "cb0dec299152bbaf")
                     .addHeader("content-type", "application/json;charset:utf-8")
                     .get()
                     .build();
