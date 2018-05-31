@@ -20,6 +20,7 @@ public class SpManager {
     public static final String KEY_TEXT_URL = "text_url";
     public static final String KEY_RESOURCES_JSON = "resources_json";
     public static final String KEY_UPDATE_TS = "updated_ts";
+    public static final String KEY_LAST_UPDATE_TS_LOCAL = "last_update_ts_local";//本地刷新菜单时间
     /**
      * 版本
      */
@@ -84,6 +85,14 @@ public class SpManager {
 
     public String getUpdateTs() {
         return mSharePreferences.getString(KEY_UPDATE_TS, "");
+    }
+
+    public void setLocalUpdateTs(long localUpdateTs){
+        mSharePreferences.edit().putLong(KEY_LAST_UPDATE_TS_LOCAL,localUpdateTs).apply();
+    }
+
+    public long getLocalUpdateTs(){
+        return mSharePreferences.getLong(KEY_LAST_UPDATE_TS_LOCAL,0);
     }
 
     public String getHostAddress() {

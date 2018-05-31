@@ -7,14 +7,14 @@
 
     <ImageView
         android:id="@+id/iv_photo"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:layout_width="match_parent"
         android:scaleType="fitXY"
         android:layout_height="match_parent" />
 
     <WebView
         android:id="@+id/wb_show"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </WebView>
@@ -22,7 +22,7 @@
     <WebView
         android:id="@+id/wb_cache"
         android:layout_width="1dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:layout_height="1dp"></WebView>
 
     <com.jude.rollviewpager.RollPagerView

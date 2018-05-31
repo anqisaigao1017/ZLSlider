@@ -47,6 +47,14 @@ public class ResourceModule {
         return SpManager.getInstance(mContext).getUpdateTs();
     }
 
+    public void setLocalUpdateTs(long localUpdateTs) {
+        SpManager.getInstance(mContext).setLocalUpdateTs(localUpdateTs);
+    }
+
+    public long getLocalUpdateTs() {
+        return SpManager.getInstance(mContext).getLocalUpdateTs();
+    }
+
     public void setHostAddress(String host) {
         SpManager.getInstance(mContext).setHostAddress(host);
     }

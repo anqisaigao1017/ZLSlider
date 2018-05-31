@@ -1,30 +1,35 @@
 package com.jude.rollviewpagerdome.module.main.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.BaseTarget;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.target.Target;
 import com.jude.rollviewpager.RollPagerView;
 import com.jude.rollviewpager.adapter.LoopPagerAdapter;
-import com.jude.rollviewpagerdome.BuildConfig;
 import com.jude.rollviewpagerdome.R;
 import com.jude.rollviewpagerdome.module.main.model.ResourceModule;
 import com.jude.rollviewpagerdome.module.version.module.VersionModule;
@@ -34,8 +39,8 @@ import com.jude.rollviewpagerdome.module.network.JsonParser;
 import com.jude.rollviewpagerdome.module.version.view.UpdateService;
 import com.jude.rollviewpagerdome.utils.FileUtil;
 import com.jude.rollviewpagerdome.utils.LogUtil;
-import com.jude.rollviewpagerdome.utils.SpManager;
 import com.jude.rollviewpagerdome.utils.SystemUtil;
+import com.jude.rollviewpagerdome.utils.TimeUtil;
 import com.jude.rollviewpagerdome.utils.UnicodeUtil;
 import com.jude.rollviewpagerdome.widget.ClearCacheDialog;
 import com.jude.rollviewpagerdome.widget.LoadingDialog;
@@ -49,12 +54,10 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -78,9 +81,10 @@ public class HomeActivity extends AppCompatActivity {
     public static final int MSG_WHAT_LOAD_IMAGES_RESOURCES = 7;//显示菜单
     public static final int MSG_WHAT_SHOW_TOAST = 8;//显示提示
     public static final int MSG_WHAT_SHOW_TOAST_DIALOG = 9;//显示提示框
-    public static final int MSG_WHAT_LOAD_ERROR_PAGE = 10;//加载错误页,用于调试htmlUrl
-    public static final int MSG_WHAT_SHOW_CACHE = 11;//显示缓存菜单
-    public static final int MSG_WHAT_SHOW_MENU = 12;//显示菜单
+    public static final int MSG_WHAT_HIDE_TOAST_DIALOG = 10;//显示提示框
+    public static final int MSG_WHAT_LOAD_ERROR_PAGE = 11;//加载错误页,用于调试htmlUrl
+    public static final int MSG_WHAT_SHOW_CACHE = 12;//显示缓存菜单
+    public static final int MSG_WHAT_SHOW_MENU = 13;//显示菜单
 
     private OkHttpClient mOkClient;
     private ImageView mPhotoView;//展示图片视图
@@ -101,6 +105,7 @@ public class HomeActivity extends AppCompatActivity {
     private int mCurrentHtmlIndex;     //当前html下标，用于缓存菜单
     private Handler mHandler;
     private boolean mUpdating;//标志是否正在更新菜单
+    private boolean mIsAutoUpdating;//标志是否自动更新菜单
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,12 +114,13 @@ public class HomeActivity extends AppCompatActivity {
         initData();
         initView();
         checkUpdate();
+        updateMenu();
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 new Thread(mUpdateMenuRunnable).start();
             }
-        }, 1000);
+        }, 10000);
     }
 
     @Override
@@ -207,6 +213,9 @@ public class HomeActivity extends AppCompatActivity {
                     case MSG_WHAT_SHOW_TOAST_DIALOG:
                         showToastDialog((String) msg.obj);
                         break;
+                    case MSG_WHAT_HIDE_TOAST_DIALOG:
+                        hideToastDialog();
+                        break;
                     case MSG_WHAT_LOAD_ERROR_PAGE:
                         String errorUrl = (String) msg.obj;
                         loadErrorPage(errorUrl);
@@ -241,11 +250,12 @@ public class HomeActivity extends AppCompatActivity {
 //        mShowWebView.getSettings().setAppCachePath(cacheDirPath);
         // 开启Application Cache功能
 //        mShowWebView.getSettings().setAppCacheEnabled(true);
+
         //初始化缓存WebView
         mCacheWebView = (WebView) findViewById(R.id.wb_cache);
-        mCacheWebView.getSettings().setJavaScriptEnabled(true);
+//        mCacheWebView.getSettings().setJavaScriptEnabled(true);
         //WebView加载页面优先使用缓存加载
-        mCacheWebView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        mCacheWebView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         // 开启DOM storage API 功能
 //        mCacheWebView.getSettings().setDomStorageEnabled(true);
         // 开启database storage API功能
@@ -377,6 +387,17 @@ public class HomeActivity extends AppCompatActivity {
             Message message = new Message();
             message.what = MSG_WHAT_SHOW_TOAST_DIALOG;
             message.obj = msg;
+            mHandler.sendMessage(message);
+        }
+    }
+
+    /**
+     * 通知主线程关闭Json界面
+     */
+    private void sendHideToastDialogMessage() {
+        if (mHandler != null) {
+            Message message = new Message();
+            message.what = MSG_WHAT_HIDE_TOAST_DIALOG;
             mHandler.sendMessage(message);
         }
     }
@@ -529,21 +550,38 @@ public class HomeActivity extends AppCompatActivity {
      * @param weekday  如果是当天的图片，会直接加载显示，否则，会缓存下来
      * @param photoUrl
      */
-    private void showAndCacheImageResources(String weekday, String photoUrl) {
+    private void showAndCacheImageResources(String weekday, final String photoUrl) {
         if (SystemUtil.getCurrentWeedDay().equals(weekday)) {
+            LogUtil.i("展示图片,url=" + photoUrl);
             mPhotoView.setVisibility(View.VISIBLE);
             mShowWebView.setVisibility(View.GONE);
             mPhotoLoopView.setVisibility(View.GONE);
             //网络加载图片
-            Glide.with(HomeActivity.this)
+            Glide.with(HomeActivity.this.getApplicationContext())
                     .load(photoUrl)
-                    .thumbnail(0.1f)
-                    .into(mPhotoView);
+                    .into(new SimpleTarget<GlideDrawable>() {
+                        @Override
+                        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                            mPhotoView.setImageDrawable(resource);
+                        }
+
+                    });
         } else {
+            LogUtil.i("缓存图片,url=" + photoUrl);
             //缓存图片
-            Glide.with(HomeActivity.this)
+            Glide.with(HomeActivity.this.getApplicationContext())
                     .load(photoUrl)
-                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .priority(Priority.HIGH)
+                    .into(new SimpleTarget<GlideDrawable>() {
+                        @Override
+                        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                            LogUtil.i("图片下载完成:" + photoUrl);
+                        }
+
+                    });
+
+
         }
     }
 
@@ -562,9 +600,9 @@ public class HomeActivity extends AppCompatActivity {
                 //缓存图片
                 for (int i = 1; i < photoUrls.size(); i++) {
                     String photoUrl = photoUrls.get(i);
-                    Glide.with(HomeActivity.this)
+                    Glide.with(HomeActivity.this.getApplicationContext())
                             .load(photoUrl)
-                            .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+                            .downloadOnly(GlideDrawableImageViewTarget.SIZE_ORIGINAL, GlideDrawableImageViewTarget.SIZE_ORIGINAL);
                 }
             }
         }
@@ -574,7 +612,8 @@ public class HomeActivity extends AppCompatActivity {
      * 展示在线资源
      */
     private void showOnLineRes() {
-        sendShowLoadingDialogMessage();
+        if (!mIsAutoUpdating)
+            sendShowLoadingDialogMessage();
         try {
             final Request request = new Request.Builder()
                     .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + SystemUtil.getAndroidId(HomeActivity.this))
@@ -594,6 +633,7 @@ public class HomeActivity extends AppCompatActivity {
                     sendShowToastMessage("获取菜单失败，失败原因:" + e.getMessage());
                     sendHideLoadingDialogMessage();
                     mUpdating = false;
+                    mIsAutoUpdating = false;
                 }
 
                 @Override
@@ -606,18 +646,40 @@ public class HomeActivity extends AppCompatActivity {
                         Map<String, Object> result = JsonParser.parseObject(jsonObject);
                         String updateTs = (String) result.get(ApiKey.GET_RES_UPDATE_TS);
                         LogUtil.i("updateTs=" + updateTs);
+
                         if (mResourceModule.getUpdateTs().equals(updateTs)) {
-                            sendShowCacheMessage();
-                            mUpdating = false;
-                            return;
+                            LogUtil.i("服务器数据没更新");
+                            if (TimeUtil.isTheSameDay(System.currentTimeMillis(), mResourceModule.getLocalUpdateTs())) {
+                                LogUtil.i("同一天");
+                                if (!mIsAutoUpdating)
+                                    sendShowCacheMessage();
+                                else
+                                    LogUtil.i("不需要刷新数据");
+                                mUpdating = false;
+                                mIsAutoUpdating = false;
+                                return;
+                            } else {
+                                LogUtil.i("非同一天");
+                                sendShowCacheMessage();
+                                mUpdating = false;
+                                mIsAutoUpdating = false;
+                                return;
+                            }
                         }
+//                        if (mResourceModule.getUpdateTs().equals(updateTs)) {
+//                            if (!mIsAutoUpdating)
+//                                sendShowCacheMessage();
+//                            mUpdating = false;
+//                            mIsAutoUpdating = false;
+//                            return;
+//                        }
                         mResourceModule.setUpdateTs(updateTs);
                         List<Map<String, Object>> resList = (ArrayList) result.get(ApiKey.GET_RES_RESOURCES);
                         LogUtil.i("result = " + result);
                         if (resList != null && resList.size() > 0) {
                             boolean isTodayHasMenu = false;//标识当天是否有菜单
                             sendClearCacheMessage();
-                            Glide.get(HomeActivity.this).clearDiskCache();
+                            Glide.get(HomeActivity.this.getApplicationContext()).clearDiskCache();
                             for (int i = 0; i < resList.size(); i++) {
                                 //解析路径，并加载图片
                                 Map<String, Object> resMap = resList.get(i);
@@ -649,21 +711,28 @@ public class HomeActivity extends AppCompatActivity {
                                 if (SystemUtil.getCurrentWeedDay().equals(weekday))
                                     isTodayHasMenu = true;
                             }
+                            //保存更新时间
+                            mResourceModule.setLocalUpdateTs(System.currentTimeMillis());
                             mUpdating = false;
+                            mIsAutoUpdating = false;
                             sendCacheHtmlResourcesMessage();
                             //将JSON写入SP
                             if (mResourceModule != null)
                                 mResourceModule.setResourcesJson(content);
                             if (!isTodayHasMenu)
                                 sendShowToastDialogMessage("今天没有设置菜单!!JSON格式为：" + UnicodeUtil.readUnicodeStr2(content.toString()));
+                            else
+                                sendHideToastDialogMessage();
                         } else {
                             LogUtil.w("菜单列列表为空");
                             sendShowToastMessage("菜单列表为空");
                             mUpdating = false;
+                            mIsAutoUpdating = false;
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         mUpdating = false;
+                        mIsAutoUpdating = false;
                     }
                 }
             });
@@ -671,6 +740,7 @@ public class HomeActivity extends AppCompatActivity {
             e.printStackTrace();
             sendShowToastMessage(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_GET_RESOURCES + "?" + ApiKey.COMMON_BOXCODE + "=" + SystemUtil.getAndroidId(HomeActivity.this));
             mUpdating = false;
+            mIsAutoUpdating = false;
         }
     }
 
@@ -685,6 +755,22 @@ public class HomeActivity extends AppCompatActivity {
             try {
                 JSONObject jsonObject = new JSONObject(resJson);
                 Map<String, Object> result = JsonParser.parseObject(jsonObject);
+                String updateTs = (String) result.get(ApiKey.GET_RES_UPDATE_TS);
+                LogUtil.i("updateTs=" + updateTs);
+
+                //同一天且服务器没变化(不自动更新)
+                if (mIsAutoUpdating) {
+                    LogUtil.i("自动刷新启动");
+                    if (TimeUtil.isTheSameDay(System.currentTimeMillis(), mResourceModule.getLocalUpdateTs())) {
+                        LogUtil.i("同一天");
+                        if (mResourceModule.getUpdateTs().equals(updateTs)) {
+                            LogUtil.i("已经是最新数据，不需要刷新");
+                            mUpdating = false;
+                            mIsAutoUpdating = false;
+                            return;
+                        }
+                    }
+                }
                 List<Map<String, Object>> resList = (ArrayList) result.get(ApiKey.GET_RES_RESOURCES);
                 LogUtil.i("resList = " + resList);
                 if (resList != null && resList.size() > 0) {
@@ -717,22 +803,32 @@ public class HomeActivity extends AppCompatActivity {
                                 String htmlUrl = resMap.get(ApiKey.COMMON_URL) + "?" + ApiKey.GET_RES_RID + "=" + rid;
                                 LogUtil.i("cache htmlUrl=" + htmlUrl);
                                 sendLoadHtmlResourceMessage(weekday, htmlUrl);
-                                mUpdating = false;
                             }
-                            return;
+                            break;
                         }
                     }
 
                     if (!isTodayHasMenu)
                         sendShowToastDialogMessage("今天没有菜式:" + "\n" + "json=" + UnicodeUtil.readUnicodeStr2(resJson.toString()));
+                    else
+                        sendHideToastDialogMessage();
+                    //保存更新时间
+                    mResourceModule.setLocalUpdateTs(System.currentTimeMillis());
+                    mUpdating = false;
+                    mIsAutoUpdating = false;
                 } else {
                     LogUtil.w("无ResJson缓存");
+                    mUpdating = false;
+                    mIsAutoUpdating = false;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                mUpdating = false;
+                mIsAutoUpdating = false;
             }
         }
         mUpdating = false;
+        mIsAutoUpdating = false;
     }
 
     /**
@@ -809,6 +905,7 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+
     /**
      * 清除WebView缓存
      */
@@ -841,14 +938,15 @@ public class HomeActivity extends AppCompatActivity {
 
 
     class UpdateMenuRunnable implements Runnable {
-        public static final int REFREASH_TIME = 1000 * 60 * 5;
-        //        public static final int REFREASH_TIME = 1000 * 10;
+                public static final int REFREASH_TIME = 1000 * 60 * 5;
+//        public static final int REFREASH_TIME = 1000 * 10;
         public boolean isStop = false;
 
         @Override
         public void run() {
             while (!isStop) {
                 sendShowToastMessage("自动更新资源");
+                mIsAutoUpdating = true;
                 updateMenu();
                 try {
                     Thread.sleep(REFREASH_TIME);
@@ -865,11 +963,11 @@ public class HomeActivity extends AppCompatActivity {
             super.onProgressChanged(view, newProgress);
             if (newProgress == 100) {
                 //缓存下一个html文件
-                sendShowToastMessage("缓存第" + mCurrentHtmlIndex + "个体资源");
-                LogUtil.i("缓存第" + mCurrentHtmlIndex + "个体资源");
-                if (mCurrentHtmlIndex < mHtmlUrlList.size() - 1) {
-                    mCurrentHtmlIndex++;
+                if (mCurrentHtmlIndex < mHtmlUrlList.size() && mHtmlUrlList.get(mCurrentHtmlIndex).equals(mCacheWebView.getUrl())) {
+                    sendShowToastMessage("缓存第" + mCurrentHtmlIndex + "个体资源");
+                    LogUtil.i("缓存第" + mCurrentHtmlIndex + "个体资源");
                     mCacheWebView.loadUrl(mHtmlUrlList.get(mCurrentHtmlIndex));
+                    mCurrentHtmlIndex++;
                 }
             }
         }
@@ -886,11 +984,17 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public View getView(ViewGroup container, int position) {
             if (mImageUrls != null && mImageUrls.size() > 0) {
-                ImageView view = new ImageView(container.getContext());
+                final ImageView view = new ImageView(container.getContext());
                 view.setBackgroundColor(Color.parseColor("#000000"));
                 view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 view.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                Glide.with(HomeActivity.this).load(mImageUrls.get(position)).into(view);
+                Glide.with(HomeActivity.this.getApplicationContext()).load(mImageUrls.get(position)).into(new SimpleTarget<GlideDrawable>() {
+                    @Override
+                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                        view.setImageDrawable(resource);
+                    }
+
+                });
                 return view;
             } else {
                 return null;
