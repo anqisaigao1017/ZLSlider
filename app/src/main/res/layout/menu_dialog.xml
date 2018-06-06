@@ -28,11 +28,20 @@
         <Button
             android:id="@+id/btn_clear_cache"
             style="@style/zhili_button"
-            android:nextFocusDown="@+id/btn_set_host"
+            android:nextFocusDown="@+id/btn_force_update"
             android:nextFocusLeft="@+id/btn_refresh"
-            android:nextFocusRight="@+id/btn_set_host"
+            android:nextFocusRight="@+id/btn_force_update"
             android:nextFocusUp="@+id/btn_refresh"
             android:text="清除本地菜单缓存" />
+
+        <Button
+            android:id="@+id/btn_force_update"
+            style="@style/zhili_button"
+            android:nextFocusDown="@+id/btn_set_host"
+            android:nextFocusLeft="@+id/btn_clear_cache"
+            android:nextFocusRight="@+id/btn_set_host"
+            android:nextFocusUp="@+id/btn_clear_cache"
+            android:text="强制更新至服务器版本" />
 
         <Button
             android:id="@+id/btn_set_host"

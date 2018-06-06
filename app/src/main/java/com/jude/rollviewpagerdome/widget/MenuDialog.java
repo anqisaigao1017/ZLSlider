@@ -19,6 +19,7 @@ import com.jude.rollviewpagerdome.utils.SystemUtil;
 public class MenuDialog extends Dialog implements View.OnClickListener {
     private Button btn_refresh;
     private Button btn_clear_cache;
+    private Button btn_force_update;
     private Button btn_exit_app;
     private Button btn_set_host;
     private OnMenuClickListener mListener;
@@ -42,10 +43,12 @@ public class MenuDialog extends Dialog implements View.OnClickListener {
         ((TextView) findViewById(R.id.tv_version_code)).setText("App版本号:" + SystemUtil.getVersionCode(getContext()) + "");
         btn_refresh = (Button) findViewById(R.id.btn_refresh);
         btn_clear_cache = (Button) findViewById(R.id.btn_clear_cache);
+        btn_force_update = (Button)findViewById(R.id.btn_force_update);
         btn_exit_app = (Button) findViewById(R.id.btn_exit);
         btn_set_host = (Button) findViewById(R.id.btn_set_host);
         btn_refresh.setOnClickListener(this);
         btn_clear_cache.setOnClickListener(this);
+        btn_force_update.setOnClickListener(this);
         btn_exit_app.setOnClickListener(this);
         btn_set_host.setOnClickListener(this);
     }
@@ -84,6 +87,11 @@ public class MenuDialog extends Dialog implements View.OnClickListener {
                     mListener.clearCacheClicked();
                 dismiss();
                 break;
+            case R.id.btn_force_update:
+                if(mListener!=null)
+                    mListener.forceUpdate();
+                dismiss();
+                break;
             case R.id.btn_exit:
                 if (mListener != null)
                     mListener.exitAppClicked();
@@ -105,6 +113,8 @@ public class MenuDialog extends Dialog implements View.OnClickListener {
         void refreshClicked();
 
         void clearCacheClicked();
+
+        void forceUpdate();
 
         void exitAppClicked();
 

@@ -285,6 +285,12 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             @Override
+            public void forceUpdate() {
+                showToast("开始更新App...");
+                HomeActivity.this.forceUpdate();
+            }
+
+            @Override
             public void exitAppClicked() {
                 finish();
             }
@@ -904,6 +910,66 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 强制更新到服务器最新版本
+     */
+    private void forceUpdate() {
+        if (SystemUtil.isNetworkAvailable(getApplicationContext())) {
+            try {
+                final Request request = new Request.Builder()
+                        .url(mResourceModule.getHostAddress() + AdConstanst.ACTION_URL_FETCH_THE_NEWEST_VERSION)
+                        .addHeader("content-type", "application/json;charset:utf-8")
+                        .get()
+                        .build();
+                Call call = mOkClient.newCall(request);
+                LogUtil.i("url=" + request.url().toString());
+                call.enqueue(new Callback() {
+
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        try {
+                            String content = response.body().string();
+                            LogUtil.i("raw data:" + content);
+                            JSONObject jsonObject = null;
+                            jsonObject = new JSONObject(content);
+                            Map<String, Object> result = JsonParser.parseObject(jsonObject);
+                            LogUtil.i("result = " + result);
+                            String ok = (String) result.get(ApiKey.COMMON_OK);
+                            if ("yes".equals(ok)) {
+                                List<Map<String, Object>> apk = (List<Map<String, Object>>) result.get(ApiKey.GET_APK_APK);
+                                LogUtil.i("apk = " + apk);
+                                if (apk != null && apk.size() > 0) {
+                                    String title = (String) apk.get(0).get(ApiKey.COMMON_TITLE);
+                                    mUpdateMenuRunnable.isStop = true;
+                                    mVersionModule.setTitle(title);
+                                    String apkUrl = (String) apk.get(0).get(ApiKey.COMMON_URL);
+                                    LogUtil.i("apkUrl=" + apkUrl);
+                                    //下载App
+                                    Intent downloadIntent = new Intent(HomeActivity.this, UpdateService.class);
+                                    downloadIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    downloadIntent.putExtra(UpdateService.KEY_APP_NAME, title);
+                                    downloadIntent.putExtra(UpdateService.KEY_APP_URL, apkUrl);
+                                    HomeActivity.this.startService(downloadIntent);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            } catch (final Exception e) {
+                e.printStackTrace();
+                sendShowToastMessage(e.toString());
+            }
+        }
+    }
+
 
     /**
      * 清除WebView缓存
@@ -937,8 +1003,8 @@ public class HomeActivity extends AppCompatActivity {
 
 
     class UpdateMenuRunnable implements Runnable {
-                public static final int REFREASH_TIME = 1000 * 60 * 5;
-//        public static final int REFREASH_TIME = 1000 * 10;
+        public static final int REFREASH_TIME = 1000 * 60 * 5;
+        //        public static final int REFREASH_TIME = 1000 * 10;
         public boolean isStop = false;
 
         @Override
