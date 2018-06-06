@@ -155,7 +155,6 @@ public class HomeActivity extends AppCompatActivity {
             updateMenu();
         } else if (keyCode == KeyEvent.KEYCODE_1) {
             showSetHostDialog();
-        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
         } else if (keyCode == KeyEvent.KEYCODE_2) {
             showClearCacheDialog();
         }
@@ -512,7 +511,7 @@ public class HomeActivity extends AppCompatActivity {
      * @param htmlUrl
      */
     private void loadHtmlResources(String weekday, String htmlUrl) {
-        if (SystemUtil.getCurrentWeedDay().equals(weekday)) {
+        if (TimeUtil.getCurrentWeedDay().equals(weekday)) {
             if (mHtmlUrlList != null)
                 mHtmlUrlList.remove(htmlUrl);
             mShowWebView.setVisibility(View.VISIBLE);
@@ -551,7 +550,7 @@ public class HomeActivity extends AppCompatActivity {
      * @param photoUrl
      */
     private void showAndCacheImageResources(String weekday, final String photoUrl) {
-        if (SystemUtil.getCurrentWeedDay().equals(weekday)) {
+        if (TimeUtil.getCurrentWeedDay().equals(weekday)) {
             LogUtil.i("展示图片,url=" + photoUrl);
             mPhotoView.setVisibility(View.VISIBLE);
             mShowWebView.setVisibility(View.GONE);
@@ -589,7 +588,7 @@ public class HomeActivity extends AppCompatActivity {
         LogUtil.i("photoUrls=" + photoUrls);
         if (photoUrls != null && photoUrls.size() > 0) {
             String weekday = photoUrls.get(0);
-            if (SystemUtil.getCurrentWeedDay().equals(weekday)) {
+            if (TimeUtil.getCurrentWeedDay().equals(weekday)) {
                 mPhotoLoopView.setVisibility(View.GONE);
                 mShowWebView.setVisibility(View.GONE);
                 mPhotoLoopView.setVisibility(View.VISIBLE);
@@ -708,7 +707,7 @@ public class HomeActivity extends AppCompatActivity {
                                     LogUtil.i("mHtmlUrlList=" + mHtmlUrlList);
                                     sendLoadHtmlResourceMessage(weekday, htmlUrl);
                                 }
-                                if (SystemUtil.getCurrentWeedDay().equals(weekday))
+                                if (TimeUtil.getCurrentWeedDay().equals(weekday))
                                     isTodayHasMenu = true;
                             }
                             //保存更新时间
@@ -780,7 +779,7 @@ public class HomeActivity extends AppCompatActivity {
                         Map<String, Object> resMap = resList.get(i);
                         String type = (String) resMap.get(ApiKey.COMMON_TYPE);
                         final String weekday = (String) resMap.get(ApiKey.GRT_RES_WEEKDAY);
-                        if (SystemUtil.getCurrentWeedDay().equals(weekday)) {
+                        if (TimeUtil.getCurrentWeedDay().equals(weekday)) {
                             isTodayHasMenu = true;
                             if ("image".equals(type)) {
                                 String photoUrl = (String) resMap.get(ApiKey.COMMON_URL);

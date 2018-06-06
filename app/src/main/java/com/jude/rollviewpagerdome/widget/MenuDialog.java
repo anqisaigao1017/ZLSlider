@@ -8,10 +8,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jude.rollviewpagerdome.R;
 import com.jude.rollviewpagerdome.utils.SpManager;
+import com.jude.rollviewpagerdome.utils.SystemUtil;
 
 
 public class MenuDialog extends Dialog implements View.OnClickListener {
@@ -37,6 +39,7 @@ public class MenuDialog extends Dialog implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.menu_dialog);
+        ((TextView) findViewById(R.id.tv_version_code)).setText("App版本号:" + SystemUtil.getVersionCode(getContext()) + "");
         btn_refresh = (Button) findViewById(R.id.btn_refresh);
         btn_clear_cache = (Button) findViewById(R.id.btn_clear_cache);
         btn_exit_app = (Button) findViewById(R.id.btn_exit);
@@ -72,36 +75,39 @@ public class MenuDialog extends Dialog implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_refresh:
-                if(mListener!=null)
+                if (mListener != null)
                     mListener.refreshClicked();
                 dismiss();
                 break;
             case R.id.btn_clear_cache:
-                if(mListener!=null)
+                if (mListener != null)
                     mListener.clearCacheClicked();
                 dismiss();
                 break;
             case R.id.btn_exit:
-                if(mListener!=null)
+                if (mListener != null)
                     mListener.exitAppClicked();
                 dismiss();
                 break;
             case R.id.btn_set_host:
-                if(mListener!=null)
+                if (mListener != null)
                     mListener.setHostClicked();
                 dismiss();
                 break;
         }
     }
 
-    public void setListener(OnMenuClickListener listener){
+    public void setListener(OnMenuClickListener listener) {
         mListener = listener;
     }
 
-    public interface OnMenuClickListener{
+    public interface OnMenuClickListener {
         void refreshClicked();
+
         void clearCacheClicked();
+
         void exitAppClicked();
+
         void setHostClicked();
     }
 }

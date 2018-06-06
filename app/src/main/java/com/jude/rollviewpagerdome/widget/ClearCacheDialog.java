@@ -67,8 +67,9 @@ public class ClearCacheDialog extends Dialog implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_positive:
-                SpManager.getInstance(getContext()).setUpdateTs("");
-                Toast.makeText(getContext(), "菜单缓存已清除", Toast.LENGTH_LONG).show();
+//                SpManager.getInstance(getContext()).setUpdateTs("");
+                Toast.makeText(getContext(), "菜单缓存已清除,请重新打开应用", Toast.LENGTH_LONG).show();
+                SystemUtil.deleteCacheFiles(getContext());
                 dismiss();
                 break;
             case R.id.tv_negative:

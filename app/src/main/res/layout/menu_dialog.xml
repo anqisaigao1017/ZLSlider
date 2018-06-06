@@ -1,41 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_refresh"
-        style="@style/zhili_button"
-        android:nextFocusRight="@+id/btn_clear_cache"
-        android:nextFocusDown="@+id/btn_clear_cache"
-        android:text="刷新菜单" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_clear_cache"
-        style="@style/zhili_button"
-        android:nextFocusRight="@+id/btn_set_host"
-        android:nextFocusDown="@+id/btn_set_host"
-        android:nextFocusUp="@+id/btn_refresh"
-        android:nextFocusLeft="@+id/btn_refresh"
-        android:text="清除本地菜单缓存" />
+        <TextView
+            android:id="@+id/tv_version_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btn_set_host"
-        style="@style/zhili_button"
-        android:gravity="center"
-        android:nextFocusDown="@+id/btn_exit"
-        android:nextFocusRight="@+id/btn_exit"
-        android:nextFocusLeft="@+id/btn_clear_cache"
-        android:nextFocusUp="@+id/btn_clear_cache"
-        android:text="设置Host" />
+        <Button
+            android:id="@+id/btn_refresh"
+            style="@style/zhili_button"
+            android:nextFocusDown="@+id/btn_clear_cache"
+            android:nextFocusRight="@+id/btn_clear_cache"
+            android:text="刷新菜单" />
 
-    <Button
-        android:id="@+id/btn_exit"
-        style="@style/zhili_button"
-        android:nextFocusUp="@+id/btn_set_host"
-        android:nextFocusLeft="@+id/btn_set_host"
-        android:text="退出程序" />
+        <Button
+            android:id="@+id/btn_clear_cache"
+            style="@style/zhili_button"
+            android:nextFocusDown="@+id/btn_set_host"
+            android:nextFocusLeft="@+id/btn_refresh"
+            android:nextFocusRight="@+id/btn_set_host"
+            android:nextFocusUp="@+id/btn_refresh"
+            android:text="清除本地菜单缓存" />
 
+        <Button
+            android:id="@+id/btn_set_host"
+            style="@style/zhili_button"
+            android:gravity="center"
+            android:nextFocusDown="@+id/btn_exit"
+            android:nextFocusLeft="@+id/btn_clear_cache"
+            android:nextFocusRight="@+id/btn_exit"
+            android:nextFocusUp="@+id/btn_clear_cache"
+            android:text="设置Host" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/btn_exit"
+            style="@style/zhili_button"
+            android:nextFocusLeft="@+id/btn_set_host"
+            android:nextFocusUp="@+id/btn_set_host"
+            android:text="退出程序" />
+    </LinearLayout>
+
+</ScrollView>

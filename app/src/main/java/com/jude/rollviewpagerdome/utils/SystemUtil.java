@@ -1,16 +1,21 @@
 package com.jude.rollviewpagerdome.utils;
 
+import android.app.ActivityManager;
 import android.app.admin.DeviceAdminInfo;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,6 +31,20 @@ public class SystemUtil {
         if (context != null)
             androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         return androidId;
+    }
+
+    public static int getVersionCode(Context context) {
+        int versionCode = 0;
+        if (context != null) {
+            PackageManager pm = context.getPackageManager();
+            try {
+                PackageInfo packageInfo = pm.getPackageInfo(context.getPackageName(), 0);
+                versionCode = packageInfo.versionCode ;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        return versionCode;
     }
 
     /**
@@ -51,43 +70,11 @@ public class SystemUtil {
     }
 
     /**
-     * 判断当前星期
-     */
-    public static String getCurrentWeedDay() {
-        String dayOfWeek = "星期一";
-        switch (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
-            case 1:
-                dayOfWeek = "星期日";
-                break;
-            case 2:
-                dayOfWeek = "星期一";
-                break;
-            case 3:
-                dayOfWeek = "星期二";
-                break;
-            case 4:
-                dayOfWeek = "星期三";
-                break;
-            case 5:
-                dayOfWeek = "星期四";
-                break;
-            case 6:
-                dayOfWeek = "星期五";
-                break;
-            case 7:
-                dayOfWeek = "星期六";
-                break;
-        }
-        Log.i("SystemUtil", "dayOfWeek=" + Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
-        return dayOfWeek;
-    }
-
-    /**
      * 获取屏幕高度
      */
-    public static int getScreenHeight(Context context){
+    public static int getScreenHeight(Context context) {
         int height = -1;
-        if(context!=null) {
+        if (context != null) {
             DisplayMetrics displayMetrics = context.getResources()
                     .getDisplayMetrics();
             if (displayMetrics != null) {
@@ -100,14 +87,31 @@ public class SystemUtil {
     /**
      * 获取屏幕宽度
      */
-    public static int getScreenWidth(Context context){
+    public static int getScreenWidth(Context context) {
         int width = -1;
-        if(context!=null) {
+        if (context != null) {
             DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             if (displayMetrics != null) {
                 width = displayMetrics.widthPixels;
             }
         }
         return width;
+    }
+
+    /**
+     * 删除所有的本地缓存
+     */
+    public static void deleteCacheFiles(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+        } else {
+            FileUtil.deleteFile(context.getCacheDir().getParentFile().getAbsolutePath());
+            FileUtil.deleteFile(context.getExternalCacheDir().getParentFile().getAbsolutePath());
+        }
+        try {
+            Runtime.getRuntime().exec("pm clear " + context.getPackageName());
+        } catch (IOException e) {
+//            e.printStackTrace();
+        }
     }
 }
